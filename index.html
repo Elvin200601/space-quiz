@@ -300,6 +300,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 12px;
       margin-top: 17px;
     }
@@ -477,6 +478,16 @@
       .card-top { padding: 21px 21px 19px; }
       .card-body { padding: 24px 21px 23px; }
       .results { padding: 35px 22px 29px; }
+      .footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .footer-note {
+        text-align: center;
+      }
+      .next-button, .restart-button {
+        width: 100%;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -503,6 +514,7 @@
           <div class="progress-row">
             <span id="question-count">Question 1 of 10</span>
             <span class="score"><span class="score-icon" aria-hidden="true">★</span> <span id="score">0</span> points</span>
+            <span id="score-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></span>
           </div>
           <div class="progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
             <div class="progress-fill" id="progress"></div>
@@ -590,6 +602,7 @@
 
     const questionCount = document.getElementById("question-count");
     const scoreLabel = document.getElementById("score");
+    const scoreAnnouncer = document.getElementById("score-announcer");
     const progress = document.getElementById("progress");
     const progressBar = document.querySelector('[role="progressbar"]');
     const questionHeading = document.getElementById("question");
@@ -602,11 +615,17 @@
     let score = 0;
     let answered = false;
 
+    function announceScoreChange() {
+      const pointLabel = score === 1 ? "point" : "points";
+      scoreAnnouncer.textContent = `Score: ${score} ${pointLabel}`;
+    }
+
     function renderQuestion() {
       const item = questions[currentQuestion];
       answered = false;
       questionCount.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
       scoreLabel.textContent = score;
+      scoreAnnouncer.textContent = "";
       progress.style.width = `${(currentQuestion / questions.length) * 100}%`;
       progressBar.setAttribute("aria-valuenow", currentQuestion);
       questionHeading.textContent = item.question;
@@ -635,6 +654,7 @@
       if (selectedIndex === item.correct) {
         score += 1;
         scoreLabel.textContent = score;
+        announceScoreChange();
         buttons[selectedIndex].classList.add("correct");
         feedback.textContent = `Correct! ${item.fact}`;
         feedback.classList.add("good");
@@ -712,6 +732,8 @@
       results.hidden = true;
       quiz.hidden = false;
       renderQuestion();
+      scoreLabel.textContent = score;
+      scoreAnnouncer.textContent = "Score reset to 0 points";
       questionHeading.focus();
     }
 
